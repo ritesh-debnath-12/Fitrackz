@@ -1,0 +1,23 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model FitnessData {
+  id           String   @id @default(cuid())
+  userId       String
+  steps        Int
+  distance     Float
+  calories     Int
+  activityType String
+  timestamp    DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([userId])
+  @@index([timestamp])
+} 
