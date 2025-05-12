@@ -1,10 +1,9 @@
 "use client"
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import Image from 'next/image'
 
 export function AnimatedImage() {
-  const [isVisible, setIsVisible] = useState(false)
   const imgRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -39,9 +38,7 @@ export function AnimatedImage() {
         alt="Woman running"
         width={3264}
         height={4896}
-        className={`transition-all duration-1000 ${
-          isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-        }`}
+        className="transition-all duration-1000"
         style={{
           objectFit: 'contain',
           objectPosition: 'center',
