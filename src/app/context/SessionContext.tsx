@@ -3,12 +3,12 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 
-interface KindeUser {
+export interface KindeUser {
   id: string;
-  given_name?: string;
-  family_name?: string;
-  email?: string;
-  picture?: string;
+  given_name: string | null;
+  family_name: string | null;
+  email: string | null;
+  picture: string | null;
 }
 
 interface SessionContextType {
@@ -33,7 +33,16 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
         const kindeSession = await getKindeServerSession();
         const user = await kindeSession.getUser();
         const isUserAuthenticated = await kindeSession.isAuthenticated();
-        setSession({ isUserAuthenticated, user });
+        setSession({ 
+          isUserAuthenticated, 
+          user: user ? {
+            id: user.id,
+            given_name: user.given_name,
+            family_name: user.family_name,
+            email: user.email,
+            picture: user.picture
+          } : null 
+        });
       } catch (error) {
         console.error("Failed to fetch session:", error);
         setSession({ isUserAuthenticated: false, user: null });
