@@ -96,12 +96,16 @@ export function FitnessTracker() {
         stepCount++;
         setSteps(stepCount);
         
+        // Update activity type based on magnitude
+        const newActivityType = magnitude > 15 ? "running" : "walking";
+        setActivityType(newActivityType);
+        
         // Calculate distance (rough estimation)
-        const strideLength = activityType === "running" ? 2.5 : 0.74; // meters
+        const strideLength = newActivityType === "running" ? 2.5 : 0.74; // meters
         setDistance(Number((stepCount * strideLength / 1000).toFixed(2))); // Convert to kilometers
         
         // Calculate calories (rough estimation)
-        const caloriesPerStep = activityType === "running" ? 0.07 : 0.04;
+        const caloriesPerStep = newActivityType === "running" ? 0.07 : 0.04;
         setCalories(Number((stepCount * caloriesPerStep).toFixed(2)));
         
         // Save data every 100 steps
@@ -110,7 +114,7 @@ export function FitnessTracker() {
             steps: stepCount,
             distance: distance,
             calories: calories,
-            activityType: activityType
+            activityType: newActivityType
           });
           setLastSavedSteps(stepCount);
         }
@@ -132,7 +136,7 @@ export function FitnessTracker() {
         });
       }
     };
-  }, [isTracking, isMobile, saveFitnessData, steps, distance, calories, activityType]);
+  }, [isTracking, isMobile, saveFitnessData, steps, distance, calories, activityType, lastSavedSteps]);
 
   if (!isMobile) {
     return (

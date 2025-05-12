@@ -11,27 +11,26 @@ export function AnimatedImage() {
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          setIsVisible(true)
-          observer.unobserve(entry.target)
+          const currentImg = imgRef.current;
+          if (currentImg) {
+            currentImg.classList.add('animate-float');
+          }
         }
       },
-      {
-        root: null,
-        rootMargin: '0px',
-        threshold: 0.1
-      }
-    )
+      { threshold: 0.5 }
+    );
 
-    if (imgRef.current) {
-      observer.observe(imgRef.current)
+    const currentImg = imgRef.current;
+    if (currentImg) {
+      observer.observe(currentImg);
     }
 
     return () => {
-      if (imgRef.current) {
-        observer.unobserve(imgRef.current)
+      if (currentImg) {
+        observer.unobserve(currentImg);
       }
-    }
-  }, [])
+    };
+  }, []);
 
   return (
     <div ref={imgRef} className="relative h-full w-full">

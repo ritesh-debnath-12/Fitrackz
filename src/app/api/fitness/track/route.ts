@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server';
-import prisma from '@/lib/prisma';
+import { prisma } from '@/lib/prisma';
 
 export async function POST(req: Request) {
   try {
@@ -77,7 +77,7 @@ export async function GET(req: Request) {
       steps: 0,
       distance: 0,
       calories: 0,
-      activities: {},
+      activities: {} as Record<string, number>,
     });
 
     return NextResponse.json(aggregatedData);
