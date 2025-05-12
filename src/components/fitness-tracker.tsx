@@ -21,12 +21,11 @@ export function FitnessTracker() {
   const { user } = useSession();
   const [isMobile, setIsMobile] = useState(false);
   const [isTracking, setIsTracking] = useState(false);
-  const [sensorData, setSensorData] = useState<SensorData>({
-    steps: 0,
-    distance: 0,
-    calories: 0,
-    activityType: 'idle'
-  });
+  const [steps, setSteps] = useState(0);
+  const [distance, setDistance] = useState(0);
+  const [calories, setCalories] = useState(0);
+  const [activityType, setActivityType] = useState<string>("walking");
+  const [lastSavedSteps, setLastSavedSteps] = useState(0);
 
   const saveFitnessData = useCallback(async (data: SensorData) => {
     try {
@@ -64,10 +63,10 @@ export function FitnessTracker() {
   useEffect(() => {
     if (!isTracking || !isMobile) return;
 
-    const stepCounter = 0;
-    let lastAcceleration = { x: 0, y: 0, z: 0 };
     let stepCount = 0;
-
+    let lastMagnitude = 0;
+    const threshold = 10; // Adjust this value based on testing
+    
     const initializeSensors = async () => {
       try {
         // Request permission for sensors
@@ -88,44 +87,35 @@ export function FitnessTracker() {
     };
 
     const handleMotion = (event: DeviceMotionEvent) => {
-      const acceleration = event.accelerationIncludingGravity;
-      if (!acceleration?.x || !acceleration?.y || !acceleration?.z) return;
-
-      // Simple step detection algorithm
-      const magnitude = Math.sqrt(
-        Math.pow(acceleration.x - lastAcceleration.x, 2) +
-        Math.pow(acceleration.y - lastAcceleration.y, 2) +
-        Math.pow(acceleration.z - lastAcceleration.z, 2)
-      );
-
-      if (magnitude > 10) { // Threshold for step detection
+      if (!isTracking) return;
+      
+      const { x, y, z } = event.accelerationIncludingGravity || { x: 0, y: 0, z: 0 };
+      const magnitude = Math.sqrt((x || 0) ** 2 + (y || 0) ** 2 + (z || 0) ** 2);
+      
+      if (Math.abs(magnitude - lastMagnitude) > threshold) {
         stepCount++;
+        setSteps(stepCount);
         
-        // Calculate approximate distance and calories
-        const strideLength = 0.7; // Average stride length in meters
-        const distance = stepCount * strideLength;
-        const calories = stepCount * 0.04; // Rough estimate of calories per step
-
-        const newSensorData = {
-          steps: stepCount,
-          distance: parseFloat(distance.toFixed(2)),
-          calories: Math.round(calories),
-          activityType: magnitude > 15 ? 'running' : 'walking'
-        };
-
-        setSensorData(newSensorData);
-
+        // Calculate distance (rough estimation)
+        const strideLength = activityType === "running" ? 2.5 : 0.74; // meters
+        setDistance(Number((stepCount * strideLength / 1000).toFixed(2))); // Convert to kilometers
+        
+        // Calculate calories (rough estimation)
+        const caloriesPerStep = activityType === "running" ? 0.07 : 0.04;
+        setCalories(Number((stepCount * caloriesPerStep).toFixed(2)));
+        
         // Save data every 100 steps
-        if (stepCount % 100 === 0) {
-          saveFitnessData(newSensorData);
+        if (stepCount % 100 === 0 && stepCount !== lastSavedSteps) {
+          saveFitnessData({
+            steps: stepCount,
+            distance: distance,
+            calories: calories,
+            activityType: activityType
+          });
+          setLastSavedSteps(stepCount);
         }
       }
-
-      lastAcceleration = {
-        x: acceleration.x,
-        y: acceleration.y,
-        z: acceleration.z
-      };
+      lastMagnitude = magnitude;
     };
 
     initializeSensors();
@@ -133,11 +123,16 @@ export function FitnessTracker() {
     return () => {
       window.removeEventListener('devicemotion', handleMotion);
       // Save final data when component unmounts or tracking stops
-      if (sensorData.steps > 0) {
-        saveFitnessData(sensorData);
+      if (steps > 0) {
+        saveFitnessData({
+          steps: steps,
+          distance: distance,
+          calories: calories,
+          activityType: activityType
+        });
       }
     };
-  }, [isTracking, isMobile, saveFitnessData, sensorData]);
+  }, [isTracking, isMobile, saveFitnessData, steps, distance, calories, activityType]);
 
   if (!isMobile) {
     return (
@@ -183,19 +178,19 @@ export function FitnessTracker() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-sm font-medium">Steps</p>
-                <p className="text-2xl font-bold">{sensorData.steps}</p>
+                <p className="text-2xl font-bold">{steps}</p>
               </div>
               <div>
                 <p className="text-sm font-medium">Distance</p>
-                <p className="text-2xl font-bold">{sensorData.distance}m</p>
+                <p className="text-2xl font-bold">{distance}km</p>
               </div>
               <div>
                 <p className="text-sm font-medium">Calories</p>
-                <p className="text-2xl font-bold">{sensorData.calories}</p>
+                <p className="text-2xl font-bold">{calories}</p>
               </div>
               <div>
                 <p className="text-sm font-medium">Activity</p>
-                <p className="text-2xl font-bold capitalize">{sensorData.activityType}</p>
+                <p className="text-2xl font-bold capitalize">{activityType}</p>
               </div>
             </div>
           )}

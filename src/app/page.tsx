@@ -4,7 +4,6 @@ import Link from "next/link";
 import { HeroCarousel } from "@/components/hero-carousel";
 import { AnimatedImage } from "@/components/animated-image";
 import { FadeInSection } from "@/components/fade-in-section";
-import { getSession } from "@/lib/session";
 
 // export async function getClientSideProps() {
 //   const session = await getSession();
