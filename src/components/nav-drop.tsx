@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import Image from "next/image";
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import {
   DropdownMenu,
@@ -16,9 +15,17 @@ import {
   LogoutLink,
 } from "@kinde-oss/kinde-auth-nextjs/components";
 
+interface KindeUser {
+  id: string;
+  given_name?: string;
+  family_name?: string;
+  email?: string;
+  picture?: string;
+}
+
 interface SessionProps {
   isUserAuthenticated: boolean;
-  user: any;
+  user: KindeUser | null;
 }
 
 export function ProfileDrop({ isUserAuthenticated, user }: SessionProps) {

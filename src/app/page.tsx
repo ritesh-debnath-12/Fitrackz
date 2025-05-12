@@ -72,7 +72,7 @@ export default function Home() {
           <section className="py-20 bg-muted">
             <div className="container mx-auto px-4">
               <h2 className="text-3xl font-bold mb-12 text-center">
-                Health is Essential, Don't Forget It
+                Health is Essential, Don&apos;t Forget It
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <FeatureCard
@@ -98,79 +98,78 @@ export default function Home() {
 
         {/* SECTION 3 START */}
         <FadeInSection>
-          
-        <section className="py-20 bg-background">
-          <div className="container mx-auto px-4">
-            <h2 className="text-3xl font-bold mb-12 text-center">
-              Improve Your Quality of Life
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="bg-muted p-8 rounded-lg">
-                <h3 className="text-2xl font-semibold mb-4">Before Fitrackz</h3>
-                <ul className="space-y-2">
-                  <li className="flex items-center">
-                    <CheckCircle className="mr-2 text-red-500" /> Inconsistent
-                    exercise routine
-                  </li>
-                  <li className="flex items-center">
-                    <CheckCircle className="mr-2 text-red-500" /> Poor sleep
-                    quality
-                  </li>
-                  <li className="flex items-center">
-                    <CheckCircle className="mr-2 text-red-500" /> Lack of
-                    motivation
-                  </li>
-                  <li className="flex items-center">
-                    <CheckCircle className="mr-2 text-red-500" /> Limited health
-                    awareness
-                  </li>
-                </ul>
-              </div>
-              <div className="bg-muted p-8 rounded-lg">
-                <h3 className="text-2xl font-semibold mb-4">After Fitrackz</h3>
-                <ul className="space-y-2">
-                  <li className="flex items-center">
-                    <CheckCircle className="mr-2 text-green-500" /> Consistent,
-                    personalized workouts
-                  </li>
-                  <li className="flex items-center">
-                    <CheckCircle className="mr-2 text-green-500" /> Improved
-                    sleep patterns
-                  </li>
-                  <li className="flex items-center">
-                    <CheckCircle className="mr-2 text-green-500" /> Increased
-                    energy and motivation
-                  </li>
-                  <li className="flex items-center">
-                    <CheckCircle className="mr-2 text-green-500" />{" "}
-                    Comprehensive health insights
-                  </li>
-                </ul>
+          <section className="py-20 bg-background">
+            <div className="container mx-auto px-4">
+              <h2 className="text-3xl font-bold mb-12 text-center">
+                Improve Your Quality of Life
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="bg-muted p-8 rounded-lg">
+                  <h3 className="text-2xl font-semibold mb-4">Before Fitrackz</h3>
+                  <ul className="space-y-2">
+                    <li className="flex items-center">
+                      <CheckCircle className="mr-2 text-red-500" /> Inconsistent
+                      exercise routine
+                    </li>
+                    <li className="flex items-center">
+                      <CheckCircle className="mr-2 text-red-500" /> Poor sleep
+                      quality
+                    </li>
+                    <li className="flex items-center">
+                      <CheckCircle className="mr-2 text-red-500" /> Lack of
+                      motivation
+                    </li>
+                    <li className="flex items-center">
+                      <CheckCircle className="mr-2 text-red-500" /> Limited health
+                      awareness
+                    </li>
+                  </ul>
+                </div>
+                <div className="bg-muted p-8 rounded-lg">
+                  <h3 className="text-2xl font-semibold mb-4">After Fitrackz</h3>
+                  <ul className="space-y-2">
+                    <li className="flex items-center">
+                      <CheckCircle className="mr-2 text-green-500" /> Consistent,
+                      personalized workouts
+                    </li>
+                    <li className="flex items-center">
+                      <CheckCircle className="mr-2 text-green-500" /> Improved
+                      sleep patterns
+                    </li>
+                    <li className="flex items-center">
+                      <CheckCircle className="mr-2 text-green-500" /> Increased
+                      energy and motivation
+                    </li>
+                    <li className="flex items-center">
+                      <CheckCircle className="mr-2 text-green-500" />{" "}
+                      Comprehensive health insights
+                    </li>
+                  </ul>
+                </div>
               </div>
             </div>
-          </div>
-        </section>
+          </section>
         </FadeInSection>
         {/* SECTION 3 END */}
 
         {/* SECTION 4 START */}
         <FadeInSection>
-        <section className="py-20 bg-muted">
-          <div className="container mx-auto px-4 text-center">
-            <h2 className="text-3xl font-bold mb-6">
-              Ready to Transform Your Life?
-            </h2>
-            <p className="text-xl mb-8">
-              Join thousands of users who have already improved their health
-              with Fitrackz.
-            </p>
-            <Button asChild size="lg">
-              <Link href="/dashboard">
-                Start Your Journey <ArrowRight className="ml-2" />
-              </Link>
-            </Button>
-          </div>
-        </section>
+          <section className="py-20 bg-muted">
+            <div className="container mx-auto px-4 text-center">
+              <h2 className="text-3xl font-bold mb-6">
+                Ready to Transform Your Life?
+              </h2>
+              <p className="text-xl mb-8">
+                Join thousands of users who have already improved their health
+                with Fitrackz.
+              </p>
+              <Button asChild size="lg">
+                <Link href="/dashboard">
+                  Start Your Journey <ArrowRight className="ml-2" />
+                </Link>
+              </Button>
+            </div>
+          </section>
         </FadeInSection>
         {/* SECTION 4 END */}
       </main>

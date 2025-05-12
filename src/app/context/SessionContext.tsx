@@ -1,11 +1,19 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { getSessionData } from "../actions/auth";
+import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
+
+interface KindeUser {
+  id: string;
+  given_name?: string;
+  family_name?: string;
+  email?: string;
+  picture?: string;
+}
 
 interface SessionContextType {
   isUserAuthenticated: boolean;
-  user: any;
+  user: KindeUser | null;
 }
 
 const SessionContext = createContext<SessionContextType>({
@@ -22,8 +30,10 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const fetchSession = async () => {
       try {
-        const sessionData = await getSessionData();
-        setSession(sessionData);
+        const kindeSession = await getKindeServerSession();
+        const user = await kindeSession.getUser();
+        const isUserAuthenticated = await kindeSession.isAuthenticated();
+        setSession({ isUserAuthenticated, user });
       } catch (error) {
         console.error("Failed to fetch session:", error);
         setSession({ isUserAuthenticated: false, user: null });

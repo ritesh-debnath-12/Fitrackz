@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useSession } from '@/app/context/SessionContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,8 +13,12 @@ interface SensorData {
   activityType: string;
 }
 
+interface DeviceMotionEventWithPermission extends DeviceMotionEvent {
+  requestPermission?: () => Promise<'granted' | 'denied'>;
+}
+
 export function FitnessTracker() {
-  const { isUserAuthenticated, user } = useSession();
+  const { user } = useSession();
   const [isMobile, setIsMobile] = useState(false);
   const [isTracking, setIsTracking] = useState(false);
   const [sensorData, setSensorData] = useState<SensorData>({
@@ -23,6 +27,28 @@ export function FitnessTracker() {
     calories: 0,
     activityType: 'idle'
   });
+
+  const saveFitnessData = useCallback(async (data: SensorData) => {
+    try {
+      const response = await fetch('/api/fitness/track', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...data,
+          userId: user?.id,
+          timestamp: new Date().toISOString()
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save fitness data');
+      }
+    } catch (error) {
+      console.error('Error saving fitness data:', error);
+    }
+  }, [user?.id]);
 
   // Check if device is mobile and has required sensors
   useEffect(() => {
@@ -38,15 +64,16 @@ export function FitnessTracker() {
   useEffect(() => {
     if (!isTracking || !isMobile) return;
 
-    let stepCounter: number | null = null;
+    const stepCounter = 0;
     let lastAcceleration = { x: 0, y: 0, z: 0 };
     let stepCount = 0;
 
     const initializeSensors = async () => {
       try {
         // Request permission for sensors
-        if ('DeviceMotionEvent' in window && (DeviceMotionEvent as any).requestPermission) {
-          const permission = await (DeviceMotionEvent as any).requestPermission();
+        const DeviceMotionEvent = window.DeviceMotionEvent as unknown as DeviceMotionEventWithPermission;
+        if (DeviceMotionEvent?.requestPermission) {
+          const permission = await DeviceMotionEvent.requestPermission();
           if (permission !== 'granted') {
             throw new Error('Sensor permission denied');
           }
@@ -79,22 +106,18 @@ export function FitnessTracker() {
         const distance = stepCount * strideLength;
         const calories = stepCount * 0.04; // Rough estimate of calories per step
 
-        setSensorData(prev => ({
-          ...prev,
+        const newSensorData = {
           steps: stepCount,
           distance: parseFloat(distance.toFixed(2)),
           calories: Math.round(calories),
           activityType: magnitude > 15 ? 'running' : 'walking'
-        }));
+        };
+
+        setSensorData(newSensorData);
 
         // Save data every 100 steps
         if (stepCount % 100 === 0) {
-          saveFitnessData({
-            steps: stepCount,
-            distance: distance,
-            calories: Math.round(calories),
-            activityType: magnitude > 15 ? 'running' : 'walking'
-          });
+          saveFitnessData(newSensorData);
         }
       }
 
@@ -109,37 +132,12 @@ export function FitnessTracker() {
 
     return () => {
       window.removeEventListener('devicemotion', handleMotion);
-      if (stepCounter) {
-        clearInterval(stepCounter);
-      }
       // Save final data when component unmounts or tracking stops
       if (sensorData.steps > 0) {
         saveFitnessData(sensorData);
       }
     };
-  }, [isTracking, isMobile]);
-
-  const saveFitnessData = async (data: SensorData) => {
-    try {
-      const response = await fetch('/api/fitness/track', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...data,
-          userId: user?.id,
-          timestamp: new Date().toISOString()
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to save fitness data');
-      }
-    } catch (error) {
-      console.error('Error saving fitness data:', error);
-    }
-  };
+  }, [isTracking, isMobile, saveFitnessData, sensorData]);
 
   if (!isMobile) {
     return (
