@@ -21,11 +21,12 @@ export function FitnessTracker() {
   const { user } = useSession();
   const [isMobile, setIsMobile] = useState(false);
   const [isTracking, setIsTracking] = useState(false);
-  const [steps, setSteps] = useState(0);
-  const [distance, setDistance] = useState(0);
-  const [calories, setCalories] = useState(0);
-  const [activityType, setActivityType] = useState<string>("walking");
-  const [lastSavedSteps, setLastSavedSteps] = useState(0);
+  const [sessionData, setSessionData] = useState({
+    steps: 0,
+    distance: 0,
+    calories: 0,
+    activityType: "walking"
+  });
 
   const saveFitnessData = useCallback(async (data: SensorData) => {
     try {
@@ -49,6 +50,21 @@ export function FitnessTracker() {
     }
   }, [user?.id]);
 
+  const handleStopTracking = async () => {
+    setIsTracking(false);
+    // Only save data if there were steps in this session
+    if (sessionData.steps > 0) {
+      await saveFitnessData(sessionData);
+    }
+    // Reset session data for next tracking session
+    setSessionData({
+      steps: 0,
+      distance: 0,
+      calories: 0,
+      activityType: "walking"
+    });
+  };
+
   // Check if device is mobile and has required sensors
   useEffect(() => {
     const checkDevice = () => {
@@ -63,10 +79,9 @@ export function FitnessTracker() {
   useEffect(() => {
     if (!isTracking || !isMobile) return;
 
-    let stepCount = 0;
+    let stepCount = sessionData.steps; // Start from current session steps
     let lastMagnitude = 0;
     const threshold = 6; // Lower threshold for better sensitivity
-    let lastSaveTime = Date.now();
     
     const initializeSensors = async () => {
       try {
@@ -95,34 +110,25 @@ export function FitnessTracker() {
       
       if (Math.abs(magnitude - lastMagnitude) > threshold) {
         stepCount++;
-        setSteps(stepCount);
         
         // Update activity type based on magnitude
         const newActivityType = magnitude > 15 ? "running" : "walking";
-        setActivityType(newActivityType);
         
         // Calculate distance (rough estimation)
         const strideLength = newActivityType === "running" ? 2.5 : 0.74; // meters
         const newDistance = Number((stepCount * strideLength / 1000).toFixed(2));
-        setDistance(newDistance);
         
         // Calculate calories (rough estimation)
         const caloriesPerStep = newActivityType === "running" ? 0.07 : 0.04;
         const newCalories = Number((stepCount * caloriesPerStep).toFixed(2));
-        setCalories(newCalories);
         
-        // Save data every 2 seconds if there are new steps
-        const currentTime = Date.now();
-        if (currentTime - lastSaveTime >= 2000 && stepCount !== lastSavedSteps) {
-          saveFitnessData({
-            steps: stepCount,
-            distance: newDistance,
-            calories: newCalories,
-            activityType: newActivityType
-          });
-          setLastSavedSteps(stepCount);
-          lastSaveTime = currentTime;
-        }
+        // Update session data
+        setSessionData({
+          steps: stepCount,
+          distance: newDistance,
+          calories: newCalories,
+          activityType: newActivityType
+        });
       }
       lastMagnitude = magnitude;
     };
@@ -131,17 +137,8 @@ export function FitnessTracker() {
 
     return () => {
       window.removeEventListener('devicemotion', handleMotion);
-      // Save final data when component unmounts or tracking stops
-      if (steps > 0) {
-        saveFitnessData({
-          steps: steps,
-          distance: distance,
-          calories: calories,
-          activityType: activityType
-        });
-      }
     };
-  }, [isTracking, isMobile, saveFitnessData, steps, distance, calories, activityType, lastSavedSteps]);
+  }, [isTracking, isMobile, sessionData.steps]);
 
   if (!isMobile) {
     return (
@@ -167,7 +164,7 @@ export function FitnessTracker() {
       <CardContent>
         <div className="space-y-4">
           <Button
-            onClick={() => setIsTracking(!isTracking)}
+            onClick={() => isTracking ? handleStopTracking() : setIsTracking(true)}
             className="w-full"
           >
             {isTracking ? (
@@ -187,19 +184,19 @@ export function FitnessTracker() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-sm font-medium">Steps</p>
-                <p className="text-2xl font-bold">{steps}</p>
+                <p className="text-2xl font-bold">{sessionData.steps}</p>
               </div>
               <div>
                 <p className="text-sm font-medium">Distance</p>
-                <p className="text-2xl font-bold">{distance}km</p>
+                <p className="text-2xl font-bold">{sessionData.distance}km</p>
               </div>
               <div>
                 <p className="text-sm font-medium">Calories</p>
-                <p className="text-2xl font-bold">{calories}</p>
+                <p className="text-2xl font-bold">{sessionData.calories}</p>
               </div>
               <div>
                 <p className="text-sm font-medium">Activity</p>
-                <p className="text-2xl font-bold capitalize">{activityType}</p>
+                <p className="text-2xl font-bold capitalize">{sessionData.activityType}</p>
               </div>
             </div>
           )}
