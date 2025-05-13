@@ -1,6 +1,6 @@
 "use client";
 
-import { PieChart, Pie, Cell, ResponsiveContainer, RadialBarChart, RadialBar, Legend, Tooltip } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, RadialBarChart, RadialBar, Legend } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface ActivityChartsProps {
@@ -19,7 +19,7 @@ export function ActivityCharts({ data, timeframe }: ActivityChartsProps) {
   // Calculate percentages based on goals
   const dailyGoals = {
     steps: 10000,
-    distance: 8, // km
+    distance: 8000, // meters instead of km
     calories: 2200,
   };
 
@@ -35,23 +35,36 @@ export function ActivityCharts({ data, timeframe }: ActivityChartsProps) {
       name: 'Steps',
       value: Math.min((data.steps / goals.steps) * 100, 100),
       fill: COLORS[0],
+      actual: data.steps,
+      goal: goals.steps
     },
     {
       name: 'Distance',
       value: Math.min((data.distance / goals.distance) * 100, 100),
       fill: COLORS[1],
+      actual: data.distance,
+      goal: goals.distance
     },
     {
       name: 'Calories',
       value: Math.min((data.calories / goals.calories) * 100, 100),
       fill: COLORS[2],
+      actual: data.calories,
+      goal: goals.calories
     },
-  ];
+  ].map(item => ({
+    ...item,
+    value: Number(item.value.toFixed(1)) // Round to 1 decimal place
+  }));
 
+  // Ensure we always have both activities represented
   const activityDistribution = [
-    { name: 'Walking', value: data.activityType === 'walking' ? 1 : 0 },
-    { name: 'Running', value: data.activityType === 'running' ? 1 : 0 },
-  ];
+    { name: 'Walking', value: 1, fill: COLORS[0] },
+    { name: 'Running', value: 1, fill: COLORS[1] }
+  ].map(activity => ({
+    ...activity,
+    value: data.activityType === activity.name.toLowerCase() ? 1 : 0
+  }));
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -71,17 +84,20 @@ export function ActivityCharts({ data, timeframe }: ActivityChartsProps) {
               endAngle={0}
             >
               <RadialBar
-                label={{ position: 'insideStart', fill: '#fff' }}
                 background
                 dataKey="value"
+                cornerRadius={15}
               />
               <Legend
                 iconSize={10}
                 layout="vertical"
                 verticalAlign="middle"
                 align="right"
+                formatter={(value, entry: any) => {
+                  const data = entry.payload;
+                  return `${data.name}: ${data.actual}/${data.goal}`;
+                }}
               />
-              <Tooltip />
             </RadialBarChart>
           </ResponsiveContainer>
         </CardContent>
@@ -89,7 +105,7 @@ export function ActivityCharts({ data, timeframe }: ActivityChartsProps) {
 
       <Card>
         <CardHeader>
-          <CardTitle>Activity Distribution</CardTitle>
+          <CardTitle>Current Activity: {data.activityType}</CardTitle>
         </CardHeader>
         <CardContent className="h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
@@ -99,15 +115,21 @@ export function ActivityCharts({ data, timeframe }: ActivityChartsProps) {
                 cx="50%"
                 cy="50%"
                 outerRadius={80}
-                fill="#8884d8"
                 dataKey="value"
-                label={({ name, value }) => value ? name : ''}
+                labelLine={false}
               >
                 {activityDistribution.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  <Cell key={`cell-${index}`} fill={entry.fill} />
                 ))}
               </Pie>
-              <Tooltip />
+              <Legend
+                verticalAlign="bottom"
+                height={36}
+                formatter={(value, entry: any) => {
+                  const isActive = entry.payload.value === 1;
+                  return `${value} ${isActive ? '(Active)' : ''}`;
+                }}
+              />
             </PieChart>
           </ResponsiveContainer>
         </CardContent>
