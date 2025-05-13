@@ -2,6 +2,7 @@
 
 import { PieChart, Pie, Cell, ResponsiveContainer, RadialBarChart, RadialBar, Legend } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useEffect, useState } from 'react';
 
 interface ActivityChartsProps {
   data: {
@@ -24,6 +25,18 @@ type ChartDataItem = {
 const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))'];
 
 export function ActivityCharts({ data, timeframe }: ActivityChartsProps) {
+  const [activityDistribution, setActivityDistribution] = useState([
+    { name: 'Walking', value: 1, fill: COLORS[0] },
+    { name: 'Running', value: 0, fill: COLORS[1] }
+  ]);
+
+  useEffect(() => {
+    setActivityDistribution([
+      { name: 'Walking', value: data.activityType === 'walking' ? 1 : 0, fill: COLORS[0] },
+      { name: 'Running', value: data.activityType === 'running' ? 1 : 0, fill: COLORS[1] }
+    ]);
+  }, [data.activityType]);
+
   // Calculate percentages based on goals
   const dailyGoals = {
     steps: 10000,
@@ -65,22 +78,13 @@ export function ActivityCharts({ data, timeframe }: ActivityChartsProps) {
     value: Number(item.value.toFixed(1)) // Round to 1 decimal place
   }));
 
-  // Ensure we always have both activities represented
-  const activityDistribution = [
-    { name: 'Walking', value: 1, fill: COLORS[0] },
-    { name: 'Running', value: 1, fill: COLORS[1] }
-  ].map(activity => ({
-    ...activity,
-    value: data.activityType === activity.name.toLowerCase() ? 1 : 0
-  }));
-
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <Card>
         <CardHeader>
           <CardTitle>Progress Overview</CardTitle>
         </CardHeader>
-        <CardContent className="h-[300px]">
+        <CardContent className="h-[300px] relative">
           <ResponsiveContainer width="100%" height="100%">
             <RadialBarChart
               cx="50%"
@@ -101,6 +105,14 @@ export function ActivityCharts({ data, timeframe }: ActivityChartsProps) {
                 layout="vertical"
                 verticalAlign="middle"
                 align="right"
+                wrapperStyle={{
+                  fontSize: '12px',
+                  paddingLeft: '10px',
+                  width: '140px',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis'
+                }}
                 formatter={(value, entry) => {
                   const payload = (entry.payload as unknown) as ChartDataItem;
                   return payload.actual !== undefined && payload.goal !== undefined
@@ -127,6 +139,7 @@ export function ActivityCharts({ data, timeframe }: ActivityChartsProps) {
                 outerRadius={80}
                 dataKey="value"
                 labelLine={false}
+                animationDuration={300}
               >
                 {activityDistribution.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.fill} />
