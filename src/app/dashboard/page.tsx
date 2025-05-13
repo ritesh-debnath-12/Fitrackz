@@ -23,10 +23,12 @@ export default function Dashboard() {
   });
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchFitnessData = async () => {
       try {
         const response = await fetch('/api/fitness/track');
-        if (response.ok) {
+        if (response.ok && isMounted) {
           const data = await response.json();
           setFitnessData(data);
         }
@@ -35,11 +37,17 @@ export default function Dashboard() {
       }
     };
 
+    // Fetch immediately
     fetchFitnessData();
-    // Fetch data every minute
-    const interval = setInterval(fetchFitnessData, 60000);
 
-    return () => clearInterval(interval);
+    // Then fetch every 2 seconds
+    const interval = setInterval(fetchFitnessData, 2000);
+
+    // Cleanup function
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
   }, []);
 
   return (
