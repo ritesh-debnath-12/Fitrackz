@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -10,14 +11,21 @@ import { useSession } from "@/app/context/SessionContext";
 
 export function Header() {
   const { isUserAuthenticated, user } = useSession();
-  const { theme } = useTheme();
+  const { theme, systemTheme } = useTheme();
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  useEffect(() => {
+    setIsDarkMode(
+      theme === "dark" || (theme === "system" && systemTheme === "dark")
+    );
+  }, [theme, systemTheme]);
   
   return (
     <header className="bg-background border-b">
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
         <div className="flex items-center space-x-4">
           <Link href="/" className="text-2xl font-bold text-primary">
-            {(theme == "dark") ? (
+            {isDarkMode ? (
               <Image src="/img/header/icon_dark.png" alt="Fitrackz" width={120} height={100}/>
             ) : (
               <Image src="/img/header/icon_light.png" alt="Fitrackz" width={120} height={100}/>
