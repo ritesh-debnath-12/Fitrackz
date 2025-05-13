@@ -65,7 +65,8 @@ export function FitnessTracker() {
 
     let stepCount = 0;
     let lastMagnitude = 0;
-    const threshold = 10; // Adjust this value based on testing
+    const threshold = 6; // Lower threshold for better sensitivity
+    let lastSaveTime = Date.now();
     
     const initializeSensors = async () => {
       try {
@@ -102,21 +103,25 @@ export function FitnessTracker() {
         
         // Calculate distance (rough estimation)
         const strideLength = newActivityType === "running" ? 2.5 : 0.74; // meters
-        setDistance(Number((stepCount * strideLength / 1000).toFixed(2))); // Convert to kilometers
+        const newDistance = Number((stepCount * strideLength / 1000).toFixed(2));
+        setDistance(newDistance);
         
         // Calculate calories (rough estimation)
         const caloriesPerStep = newActivityType === "running" ? 0.07 : 0.04;
-        setCalories(Number((stepCount * caloriesPerStep).toFixed(2)));
+        const newCalories = Number((stepCount * caloriesPerStep).toFixed(2));
+        setCalories(newCalories);
         
-        // Save data every 100 steps
-        if (stepCount % 100 === 0 && stepCount !== lastSavedSteps) {
+        // Save data every 2 seconds if there are new steps
+        const currentTime = Date.now();
+        if (currentTime - lastSaveTime >= 2000 && stepCount !== lastSavedSteps) {
           saveFitnessData({
             steps: stepCount,
-            distance: distance,
-            calories: calories,
+            distance: newDistance,
+            calories: newCalories,
             activityType: newActivityType
           });
           setLastSavedSteps(stepCount);
+          lastSaveTime = currentTime;
         }
       }
       lastMagnitude = magnitude;
