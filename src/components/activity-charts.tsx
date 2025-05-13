@@ -13,6 +13,14 @@ interface ActivityChartsProps {
   timeframe: 'daily' | 'weekly' | 'monthly';
 }
 
+type ChartDataItem = {
+  name: string;
+  value: number;
+  fill: string;
+  actual?: number;
+  goal?: number;
+};
+
 const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))'];
 
 export function ActivityCharts({ data, timeframe }: ActivityChartsProps) {
@@ -93,9 +101,11 @@ export function ActivityCharts({ data, timeframe }: ActivityChartsProps) {
                 layout="vertical"
                 verticalAlign="middle"
                 align="right"
-                formatter={(value, entry: any) => {
-                  const data = entry.payload;
-                  return `${data.name}: ${data.actual}/${data.goal}`;
+                formatter={(value, entry) => {
+                  const payload = (entry.payload as unknown) as ChartDataItem;
+                  return payload.actual !== undefined && payload.goal !== undefined
+                    ? `${payload.name}: ${payload.actual}/${payload.goal}`
+                    : value;
                 }}
               />
             </RadialBarChart>
@@ -125,9 +135,9 @@ export function ActivityCharts({ data, timeframe }: ActivityChartsProps) {
               <Legend
                 verticalAlign="bottom"
                 height={36}
-                formatter={(value, entry: any) => {
-                  const isActive = entry.payload.value === 1;
-                  return `${value} ${isActive ? '(Active)' : ''}`;
+                formatter={(value, entry) => {
+                  const payload = (entry.payload as unknown) as ChartDataItem;
+                  return `${value} ${payload.value === 1 ? '(Active)' : ''}`;
                 }}
               />
             </PieChart>
