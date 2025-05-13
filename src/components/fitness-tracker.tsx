@@ -81,7 +81,7 @@ export function FitnessTracker() {
 
     let stepCount = sessionData.steps; // Start from current session steps
     let lastMagnitude = 0;
-    const threshold = 6; // Lower threshold for better sensitivity
+    const threshold = 10; // Lower threshold for better sensitivity
     
     const initializeSensors = async () => {
       try {
